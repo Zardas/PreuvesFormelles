@@ -1,8 +1,35 @@
-/*@predicate tache(Tache tache; int temps_necessaire, int gain) =
-	tache.temps_necessaire |-> temps_necessaire &*&
-	tache.gain |-> gain &*&
-	temps_necessaire >= 0 &*& gain >= 0;
-@*/
+//Question 1 :
+
+class Tache {
+	private int temps_necessaire;
+	private int gain;
+	
+	public Tache(int temps_necessaire, int gain)
+	//@requires temps_necessaire >= 0;
+	//@ensures this.temps_necessaire |-> temps_necessaire &*& this.gain |-> gain;
+	{
+		this.temps_necessaire = temps_necessaire;
+		this.gain = gain;
+	}
+	
+	public int get_temps_necessaire()
+	//@requires this.temps_necessaire |-> ?b;
+	//@ensures this.temps_necessaire |-> b &*& result == b;
+	{
+		return this.temps_necessaire;
+	}
+	
+	public int get_gain()
+	//@requires this.gain |-> ?b;
+	//@ensures this.gain |-> b &*& result == b;
+	{
+		return this.gain;
+	}
+}
+
+//Question 2 :
+
+//@predicate tache(Tache tache; int tn, int g) = tache.temps_necessaire |-> tn &*& tache.gain |-> g &*& tn >= 0 &*& g >= 0;
 class Tache {
 	private int temps_necessaire;
 	private int gain;
@@ -16,19 +43,21 @@ class Tache {
 	}
 	
 	public int get_temps_necessaire()
-	//@requires tache(this, ?tn, ?gain);
-	//@ensures tache(this, tn, gain) &*& result == tn;
+	//@requires tache(this, ?tn, _);
+	//@ensures tache(this, tn, _) &*& result == tn;
 	{
 		return this.temps_necessaire;
 	}
 	
 	public int get_gain()
-	//@requires tache(this, ?tn, ?g);
-	//@ensures tache(this, tn, g) &*& result == g;
+	//@requires tache(this, _, ?g);
+	//@ensures tache(this, _, g) &*& result == g;
 	{
 		return this.gain;
 	}
 }
+
+//Question 4 : (question 3 trivialle)
 
 /*@predicate travailleur(Travailleur travailleur; int temps_dispo, int salaire_horaire, int salaire_percu) = 
 	travailleur.temps_dispo |-> temps_dispo &*&
@@ -40,8 +69,6 @@ class Travailleur {
 	private int salaire_horaire;
 	private int salaire_percu;
 	
-	//private int temps_travail; //TODO : question 6
-	
 	public Travailleur(int temps_dispo, int salaire_horaire)
 	//@requires salaire_horaire >= 0;
 	//@ensures travailleur(this, temps_dispo, salaire_horaire, 0);
@@ -52,44 +79,40 @@ class Travailleur {
 	}
 	
 	public int get_temps_dispo()
-	//@requires travailleur(this, ?td, ?sh, ?sp);
-	//@ensures travailleur(this, td, sh, sp) &*& result == td;
+	//@requires travailleur(this, ?td, _, _);
+	//@ensures travailleur(this, td, _, _) &*& result == td;
 	{
 		return this.temps_dispo;
 	}
 	
 	public int get_salaire_horaire()
-	//@requires travailleur(this, ?td, ?sh, ?sp);
-	//@ensures travailleur(this, td, sh, sp) &*& result == sh;
+	//@requires travailleur(this, _, ?sh, _);
+	//@ensures travailleur(this, _, sh, _) &*& result == sh;
 	{
 		return this.salaire_horaire;
 	}
 	
 	public int get_salaire_percu()
-	//@requires travailleur(this, ?td, ?sh, ?sp);
-	//@ensures travailleur(this, td, sh, sp) &*& result == sp;
+	//@requires travailleur(this, _, _, ?sp);
+	//@ensures travailleur(this, _, _, sp) &*& result == sp;
 	{
 		return this.salaire_percu;
 	}
-	
-	public int travailler(int t)
-	//@requires travailleur(this, ?td, ?sh, ?sp) &*& t >= 0;
-	//@ensures travailleur(this, td, sh, sp+sh*t) &*& result == sh*t;
-	{
-		this.salaire_percu = this.salaire_percu + (this.salaire_horaire*t);
-		return (this.salaire_horaire*t);
-	}
-	
-	public void setTempsDispo(int t)
-	//@requires travailleur(this, ?td, ?sh, ?sp);
-	//@ensures travailleur(this, t, sh, sp);
-	{
-		this.temps_dispo = t;
-	}
-	  
 }
 
+//Question 5 et 6 : 
+	
+	public int travailler(int t)
+	//@requires travailleur(this, _, ?sh, ?sp) &*& t >= 0;
+	//@ensures travailleur(this, _, sh, sp+sh*t);
+	{
+		this.salaire_percu += this.salaire_horaire*t;
+		return this.salaire_horaire*t;
+	}
 
+
+
+//Question 7 et 8 :
 
 /*@predicate usine(Usine usine; int balance) = usine.balance |-> balance;
 @*/
@@ -116,8 +139,24 @@ class Usine {
     {
         this.balance += argent;
     }
-    
-    public boolean effectueTache(Tache tache, Travailleur travailleur)
+
+}
+
+//Question 9 
+
+On rajoute ça dans travailleur : 
+
+public void setTempsDispo(int t)
+	//@requires travailleur(this, ?td, ?sh, ?sp);
+	//@ensures travailleur(this, t, sh, sp);
+	{
+		this.temps_dispo = t;
+	}
+
+
+Et ça dans usine :
+
+public boolean effectueTache(Tache tache, Travailleur travailleur)
     //@requires tache(tache, ?n, ?g) &*& travailleur(travailleur, ?td, ?sh, ?sp) &*& usine(this, ?di);
     //@ensures true;
     {   
@@ -138,41 +177,7 @@ class Usine {
             return false;
         }
     }
-    
-}
 
 
-class UsineTest {
 
-	public static void main(String[] args)
-	//@requires true;
-	//@ensures true;
-	{
-		Tache tache = new Tache(2,50);
-		Travailleur travailleur  = new Travailleur(35,15);
-		Usine usine = new Usine(50);
-		
-		//Test de tache
-		int temps_necessaire = tache.get_temps_necessaire();
-		assert temps_necessaire == 2;
-		int gain = tache.get_gain();
-		assert gain == 50;
-		
-		//Test de travailleur
-		int temps_dispo = travailleur.get_temps_dispo();
-		assert temps_dispo == 35;
-		int salaire_horaire = travailleur.get_salaire_horaire();
-		assert salaire_horaire == 15;
-		int salaire_percu = travailleur.get_salaire_percu();
-		assert salaire_percu == 0;
-		
-		int travail = travailleur.travailler(10);
-		assert travail == 150;
-		salaire_percu = travailleur.get_salaire_percu();
-		assert salaire_percu == 150;
-		
-		
-		
-		
-	}
-}
+	  
